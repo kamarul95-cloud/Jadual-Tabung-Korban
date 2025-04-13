@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Jadual Tabung Korban - Butiran Berformat</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f9f9f9;
+    }
+    h2 {
+      text-align: center;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      font-size: 14px;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 8px;
+      text-align: center;
+    }
+    th {
+      background-color: #f2f2f2;
+    }
+    /* Baris butiran yang disembunyikan secara default */
+    .details-row {
+      display: none;
+      background-color: #eef;
+    }
+    /* Kotak untuk bahagian butiran */
+    .details-cell {
+      background: #fff;
+      border: 1px solid #ccc;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      padding: 10px;
+    }
+    .details-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    .details-table th, .details-table td {
+      border: 1px solid #ddd;
+      padding: 5px 8px;
+      text-align: left;
+    }
+    .details-table th {
+      background-color: #f7f7f7;
+    }
+    /* Gaya untuk baris kesimpulan */
+    .summary-row {
+      background-color: #d1e7dd;  /* Hijau lembut untuk kesimpulan */
+      font-weight: bold;
+    }
+    .toggle-btn {
+      padding: 5px 10px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+    .toggle-btn:focus {
+      outline: none;
+    }
+    @media (max-width: 768px) {
+      th, td {
+        font-size: 12px;
+      }
+    }
+  </style>
+  <!-- Muatkan PapaParse untuk parse CSV -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+</head>
+<body>
+
+  <h2>Jadual Tabung Korban</h2>
+  <table id="main-table">
+    <thead>
+      <tr>
+        <th>BIL</th>
+        <th>NAMA</th>
+        <th>Tindakan</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- Baris utama data akan diisi secara dinamik -->
+    </tbody>
+  </table>
+
+  <script>
+    // URL CSV dari Google Sheets
+    const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSWfQjZuYimltDYtnZsDdUma6sdAb80wLfmQ35qnRn1U8OQ2NVv86E3vKrYSUJpUlcEUyXzI65SbPqC/pub?gid=0&single=true&output=csv";
+
+    function toggleDetails(id) {
+      const detailsRow = document.getElementById(id);
+      if (detailsRow.style.display === "table-row") {
+        detailsRow.style.display = "none";
+      } else {
+        detailsRow.style.display = "table-row";
+      }
+    }
+
+    Papa.parse(csvUrl, {
+      download: true,
+      header: true,
+      skipEmptyLines: true,
+      complete: function(results) {
+        if (!results.data || results.data.length === 0) {
+          console.error("Tiada data atau CSV tidak berjaya diparse.");
+          return;
+        }
+        const data = results.data;
+        const tbody = document.querySelector("#main-table tbody");
+
+        data.forEach((row, index) => {
+          // Baris utama peserta
+          const mainRow = document.createElement("tr");
+          mainRow.innerHTML = `
+            <td>${row["BIL"] || index + 1}</td>
+            <td>${row["NAMA"] || ""}</td>
+            <td>
+              <button class="toggle-btn" onclick="toggleDetails('details-${index}')">Lihat Butiran</button>
+            </td>
+          `;
+          tbody.appendChild(mainRow);
+
+          // Baris butiran dengan kotak berformat
+          const detailsRow = document.createElement("tr");
+          detailsRow.id = `details-${index}`;
+          detailsRow.className = "details-row";
+          const detailsCell = document.createElement("td");
+          detailsCell.colSpan = 3;
+          detailsCell.className = "details-cell";
+
+          detailsCell.innerHTML = `
+            <table class="details-table">
+              <thead>
+                <tr>
+                  <th>Bulan</th>
+                  <th>Bayaran (RM)</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td>Julai</td><td>${row["JULAI"] || ""}</td></tr>
+                <tr><td>Ogos</td><td>${row["OGOS"] || ""}</td></tr>
+                <tr><td>September</td><td>${row["SEPTEMBER"] || ""}</td></tr>
+                <tr><td>Oktober</td><td>${row["OKTOBER"] || ""}</td></tr>
+                <tr><td>November</td><td>${row["NOVEMBER"] || ""}</td></tr>
+                <tr><td>Disember</td><td>${row["DISEMBER"] || ""}</td></tr>
+                <tr><td>Januari</td><td>${row["JANUARI"] || ""}</td></tr>
+                <tr><td>Februari</td><td>${row["FEBRUARI"] || ""}</td></tr>
+                <tr><td>Mac</td><td>${row["MAC"] || ""}</td></tr>
+                <tr><td>April</td><td>${row["APRIL"] || ""}</td></tr>
+                <tr><td>Mei</td><td>${row["MEI"] || ""}</td></tr>
+                <tr><td>Jun</td><td>${row["JUN"] || ""}</td></tr>
+                <tr class="summary-row"><td>JUMLAH BAYARAN</td><td>${row["JUMLAH BAYARAN"] || ""}</td></tr>
+                <tr class="summary-row"><td>HARGA 1 BAHAGIAN</td><td>${row["HARGA 1 BAHAGIAN"] || ""}</td></tr>
+                <tr class="summary-row"><td>BAKI BAYARAN</td><td>${row["BAKI BAYARAN"] || ""}</td></tr>
+              </tbody>
+            </table>
+          `;
+          detailsRow.appendChild(detailsCell);
+          tbody.appendChild(detailsRow);
+        });
+      },
+      error: function(err) {
+        console.error("Ralat semasa memuat CSV:", err);
+      }
+    });
+  </script>
+
+</body>
+</html>
