@@ -3,119 +3,189 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Jadual Tabung Korban - Butiran Berformat</title>
-
-  <!-- Google Analytics -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-TLP4T18K9T"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-
-    gtag('config', 'G-TLP4T18K9T');
-  </script>
-
+  <title>Dashboard Tabung Korban</title>
   <style>
     body {
       font-family: Arial, sans-serif;
       margin: 0;
       padding: 20px;
-      background-color: #f9f9f9;
+      background: #e8f5e9;
     }
     h2 {
       text-align: center;
+      margin-bottom: 10px;
+      color: #1b5e20;
     }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 20px;
-      font-size: 14px;
-    }
-    th, td {
-      border: 1px solid #ccc;
-      padding: 8px;
+    .search-box {
       text-align: center;
+      margin-bottom: 20px;
     }
-    th {
-      background-color: #f2f2f2;
+    .search-box input {
+      width: 300px;
+      max-width: 90%;
+      padding: 10px 14px;
+      border: 2px solid #66bb6a;
+      border-radius: 8px;
+      font-size: 14px;
+      outline: none;
     }
-    /* Baris butiran yang disembunyikan secara default */
-    .details-row {
-      display: none;
-      background-color: #eef;
+    .search-box input:focus {
+      border-color: #2e7d32;
+      box-shadow: 0 0 6px rgba(46,125,50,0.4);
     }
-    /* Kotak untuk bahagian butiran */
-    .details-cell {
-      background: #fff;
-      border: 1px solid #ccc;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-      padding: 10px;
+    .card-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
     }
-    .details-table {
+    .card {
+      background: linear-gradient(160deg, #a8e6cf, #dcedc1, #81c784);
+      border-radius: 14px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      padding: 12px;
+      border-top: 4px solid #2e7d32;
+      transition: transform 0.2s, box-shadow 0.3s;
+      color: black; /* teks utama kad jadi hitam */
+      text-shadow: none;
+    }
+    .card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+    }
+    .card h3 {
+      margin: 0 0 4px;
+      font-size: 16px;
+      color: black;
+      text-shadow: none;
+    }
+    .card small {
+      color: #333;
+      font-size: 12px;
+      text-shadow: none;
+    }
+    .toggle-btn {
+      margin-top: 8px;
+      padding: 6px 10px;
+      background: #43a047;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 12px;
+      transition: background 0.3s;
+    }
+    .toggle-btn:hover {
+      background: #2e7d32;
+    }
+    .details {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.5s ease;
+      margin-top: 10px;
+    }
+    .details.open {
+      max-height: 600px;
+    }
+    .details table {
       width: 100%;
       border-collapse: collapse;
-      font-size: 13px;
+      font-size: 12px;
+      border-radius: 8px;
+      overflow: hidden;
+      color: black;
+      background: rgba(255,255,255,0.95);
     }
-    .details-table th, .details-table td {
-      border: 1px solid #ddd;
+    .details th, .details td {
       padding: 5px 8px;
       text-align: left;
     }
-    .details-table th {
-      background-color: #f7f7f7;
-    }
-    /* Gaya untuk baris kesimpulan */
-    .summary-row {
-      background-color: #d1e7dd;  /* Hijau lembut untuk kesimpulan */
+    .details th {
+      background: #c8e6c9;
       font-weight: bold;
     }
-    .toggle-btn {
-      padding: 5px 10px;
-      background-color: #4CAF50;
-      color: white;
-      border: none;
-      cursor: pointer;
-      border-radius: 4px;
+    .details tr:nth-child(even) {
+      background: #f9f9f9;
     }
-    .toggle-btn:focus {
-      outline: none;
+    .details td:first-child {
+      font-weight: 500;
+      color: #444;
     }
-    @media (max-width: 768px) {
-      th, td {
-        font-size: 12px;
-      }
+    .details td:last-child::before {
+      content: "💰 ";
+      color: #2e7d32;
+    }
+    /* Warna khusus untuk summary dengan class + digit lebih menonjol */
+    .summary.jumlah td:last-child { 
+      color: #2e7d32; 
+      font-weight: bold; 
+      font-size: 14px; 
+    }
+    .summary.harga td:last-child { 
+      color: #1565c0; 
+      font-weight: bold; 
+      font-size: 14px; 
+    }
+    .summary.baki td:last-child { 
+      color: #c62828; 
+      font-weight: bold; 
+      font-size: 14px; 
     }
   </style>
-  <!-- Muatkan PapaParse untuk parse CSV -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
 </head>
 <body>
 
-  <h2>Jadual Tabung Korban</h2>
-  <table id="main-table">
-    <thead>
-      <tr>
-        <th>BIL</th>
-        <th>NAMA</th>
-        <th>Tindakan</th>
-      </tr>
-    </thead>
-    <tbody>
-      <!-- Baris utama data akan diisi secara dinamik -->
-    </tbody>
-  </table>
+  <h2>Dashboard Tabung Korban</h2>
+
+  <div class="search-box">
+    <input type="text" id="searchInput" placeholder="Cari nama anda...">
+  </div>
+
+  <div class="card-container" id="card-container"></div>
 
   <script>
-    // URL CSV dari Google Sheets
     const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSWfQjZuYimltDYtnZsDdUma6sdAb80wLfmQ35qnRn1U8OQ2NVv86E3vKrYSUJpUlcEUyXzI65SbPqC/pub?gid=0&single=true&output=csv";
-    
+
     function toggleDetails(id) {
-      const detailsRow = document.getElementById(id);
-      if (detailsRow.style.display === "table-row") {
-        detailsRow.style.display = "none";
-      } else {
-        detailsRow.style.display = "table-row";
-      }
+      document.getElementById(id).classList.toggle("open");
+    }
+
+    let allData = [];
+
+    function renderCards(data) {
+      const container = document.getElementById("card-container");
+      container.innerHTML = "";
+      data.forEach((row, index) => {
+        const card = document.createElement("div");
+        card.className = "card";
+        card.innerHTML = `
+          <h3>${row["NAMA"] || "Tanpa Nama"}</h3>
+          <small>Peserta ${index + 1}</small><br>
+          <button class="toggle-btn" onclick="toggleDetails('details-${index}')">Lihat Butiran</button>
+          <div class="details" id="details-${index}">
+            <table>
+              <tr><th>Bulan</th><th>Bayaran</th></tr>
+              <tr><td>Julai</td><td>${row["JULAI"] || "-"}</td></tr>
+              <tr><td>Ogos</td><td>${row["OGOS"] || "-"}</td></tr>
+              <tr><td>September</td><td>${row["SEPTEMBER"] || "-"}</td></tr>
+              <tr><td>Oktober</td><td>${row["OKTOBER"] || "-"}</td></tr>
+              <tr><td>November</td><td>${row["NOVEMBER"] || "-"}</td></tr>
+              <tr><td>Disember</td><td>${row["DISEMBER"] || "-"}</td></tr>
+              <tr><td>Januari</td><td>${row["JANUARI"] || "-"}</td></tr>
+              <tr><td>Februari</td><td>${row["FEBRUARI"] || "-"}</td></tr>
+              <tr><td>Mac</td><td>${row["MAC"] || "-"}</td></tr>
+              <tr><td>April</td><td>${row["APRIL"] || "-"}</td></tr>
+              <tr><td>Mei</td><td>${row["MEI"] || "-"}</td></tr>
+              <tr><td>Jun</td><td>${row["JUN"] || "-"}</td></tr>
+              <tr class="summary jumlah"><td>JUMLAH BAYARAN</td><td>${row["JUMLAH BAYARAN"] || "-"}</td></tr>
+              <tr class="summary harga"><td>HARGA 1 BAHAGIAN</td><td>${row["HARGA 1 BAHAGIAN"] || "-"}</td></tr>
+              <tr class="summary baki"><td>BAKI BAYARAN</td><td>${row["BAKI BAYARAN"] || "-"}</td></tr>
+            </table>
+          </div>
+        `;
+        container.appendChild(card);
+      });
     }
 
     Papa.parse(csvUrl, {
@@ -123,67 +193,17 @@
       header: true,
       skipEmptyLines: true,
       complete: function(results) {
-        if (!results.data || results.data.length === 0) {
-          console.error("Tiada data atau CSV tidak berjaya diparse.");
-          return;
-        }
-        const data = results.data;
-        const tbody = document.querySelector("#main-table tbody");
-
-        data.forEach((row, index) => {
-          // Baris utama peserta
-          const mainRow = document.createElement("tr");
-          mainRow.innerHTML = `
-            <td>${row["BIL"] || index + 1}</td>
-            <td>${row["NAMA"] || ""}</td>
-            <td>
-              <button class="toggle-btn" onclick="toggleDetails('details-${index}')">Lihat Butiran</button>
-            </td>
-          `;
-          tbody.appendChild(mainRow);
-
-          // Baris butiran dengan kotak berformat
-          const detailsRow = document.createElement("tr");
-          detailsRow.id = `details-${index}`;
-          detailsRow.className = "details-row";
-          const detailsCell = document.createElement("td");
-          detailsCell.colSpan = 3;
-          detailsCell.className = "details-cell";
-
-          detailsCell.innerHTML = `
-            <table class="details-table">
-              <thead>
-                <tr>
-                  <th>Bulan</th>
-                  <th>Bayaran (RM)</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr><td>Julai</td><td>${row["JULAI"] || ""}</td></tr>
-                <tr><td>Ogos</td><td>${row["OGOS"] || ""}</td></tr>
-                <tr><td>September</td><td>${row["SEPTEMBER"] || ""}</td></tr>
-                <tr><td>Oktober</td><td>${row["OKTOBER"] || ""}</td></tr>
-                <tr><td>November</td><td>${row["NOVEMBER"] || ""}</td></tr>
-                <tr><td>Disember</td><td>${row["DISEMBER"] || ""}</td></tr>
-                <tr><td>Januari</td><td>${row["JANUARI"] || ""}</td></tr>
-                <tr><td>Februari</td><td>${row["FEBRUARI"] || ""}</td></tr>
-                <tr><td>Mac</td><td>${row["MAC"] || ""}</td></tr>
-                <tr><td>April</td><td>${row["APRIL"] || ""}</td></tr>
-                <tr><td>Mei</td><td>${row["MEI"] || ""}</td></tr>
-                <tr><td>Jun</td><td>${row["JUN"] || ""}</td></tr>
-                <tr class="summary-row"><td>JUMLAH BAYARAN</td><td>${row["JUMLAH BAYARAN"] || ""}</td></tr>
-                <tr class="summary-row"><td>HARGA 1 BAHAGIAN</td><td>${row["HARGA 1 BAHAGIAN"] || ""}</td></tr>
-                <tr class="summary-row"><td>BAKI BAYARAN</td><td>${row["BAKI BAYARAN"] || ""}</td></tr>
-              </tbody>
-            </table>
-          `;
-          detailsRow.appendChild(detailsCell);
-          tbody.appendChild(detailsRow);
-        });
-      },
-      error: function(err) {
-        console.error("Ralat semasa memuat CSV:", err);
+        allData = results.data;
+        renderCards(allData);
       }
+    });
+
+    document.getElementById("searchInput").addEventListener("keyup", function() {
+      const keyword = this.value.toLowerCase();
+      const filtered = allData.filter(row =>
+        (row["NAMA"] || "").toLowerCase().includes(keyword)
+      );
+      renderCards(filtered);
     });
   </script>
 
